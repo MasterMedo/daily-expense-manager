@@ -58,7 +58,7 @@ import matplotlib.pyplot as plt       # plotting processed data
 reading data from a .csv file
 ```python
 df = pd.read_csv('./expenses.csv')
-print(df)
+print(df.iloc[90:130, :11])
 ```
 
 ![raw](./img/raw_data.png)
@@ -115,6 +115,7 @@ def transform_row(r):
     return r
 
 df = df.apply(transform_row, axis=1)
+print(df.iloc[90:130, :11])
 ```
 
 now that we have filled out our data set
