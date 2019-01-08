@@ -1,7 +1,5 @@
 # analyzing daily expenses, real use-case
 
-## description
-
 Each day people spend money on various things and change their habits based on their priorities.
 I happen to keep a record of everything I buy.
 Namely, the data sheet consists of the following columns:
@@ -22,6 +20,7 @@ Namely, the data sheet consists of the following columns:
 ```
 
 ## questions to be answered:
+
 1. what percentage of money is spent on groceries, activities, traveling...?
 2. what is the preferred public transport?
 3. how expensive is each city daily?
@@ -29,6 +28,7 @@ Namely, the data sheet consists of the following columns:
 5. how much money will be spent in the upcoming weeks?
 
 ### questions 1-4 pseudocode
+
 1. preprocess
 	1. read data
 	2. fill empty data
@@ -45,6 +45,7 @@ Namely, the data sheet consists of the following columns:
   4. weekly expense bar chart
 
 importing libraries
+
 ```python
 import pandas as pd                   # reading csv files and dataframes
 import numpy as np                    # matrix manipulation
@@ -195,6 +196,7 @@ plt.yticks(np.arange(0, 26, 1))
 plt.legend(list(zip(*bars))[0], all_categories)
 plt.show()
 ```
+
 ![stackedbarchart](./img/stacked_bar_chart.png)
 
 ### how much money is spent weekly?
@@ -220,10 +222,13 @@ plt.show()
 ![weeklybarchart](./img/weekly_bar_chart.png)
 
 ## what about question 5?
+
 > how much money will be spent in the upcoming weeks?
+
 usually, we would approach this differently, trying to evaluate which machine learning method would be best suitable for adapting to the plotted function, but in this case, let's just experiment and do regression since it's the 'simplest' one
 
 ### regression pseudocode
+
 1. preprocess
 	1. convert data into a weekly table
 	5. encode categorical data
