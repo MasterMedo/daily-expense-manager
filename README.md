@@ -1,8 +1,14 @@
 # analyzing daily expenses, real use-case
 
-Each day people spend money on various things and change their habits based on their priorities.
-I happen to keep a record of everything I buy.
-Namely, the data sheet consists of the following columns:
+each day people spend money on various things.
+each transaction holds a bunch of meta information.
+instead of going to waste that information can be used to learn about one's tendencies.
+what percentage of money is spent on food? on transpot? traveling?
+how expensive are the cities that were visited?
+how much money is spent daily? weekly? monthly?
+can we use the data to predict our future expenses based on our location?
+
+the data set I keep consists of the following columns:
 ```
 1   hrk - croatian kuna, amount of money spent in the currency of Croatia,
 2   vendor - company that I bought an item/service from,
@@ -63,19 +69,24 @@ print(df.iloc[90:130, :11])
 
 ![raw](./img/raw_data.png)
 
-Quick inspection let's us conclude there is a lot of data missing.
-Whats more, in the last couple of columns the dates aren't even fully completed.
-That's because we can fill out all of the missing information from what we already have.
-Throwing a glance at our pseudocode we quickly find out what we have to do:
+upon quick inspection one can denote the marginal scarcity of data.
+whats more, in the last couple of columns the dates aren't even fully completed.
+throwing a glance at the pseudocode provided above one can fleetly conclude
+that is not a problem.
+all the missing data can be filled from what we already have.
 
 1. date = add year where needed
 2. country = get_country_from_city
 3. currency = get_currency_from_country
-4. currencies
-  1. if hrk not set: hrk = lcy * get_exchange_rate(currency, 'HRK' date)
-  2. if eur not set: eur = hrk * get_exchange_rate('HRK', 'EUR', date)
+4. if hrk not set: hrk = lcy * get_exchange_rate(currency, 'HRK', date)
+5. if eur not set: eur = hrk * get_exchange_rate('HRK', 'EUR', date)
 
-let's do everything in one swoop
+fortuntely non of the relevant information is missing (cost) for any of the
+entries, but if there were some missing the mean of the column would replace
+the empty record.
+
+the data will be processed in one swoop, the goal is to iterate over the set
+only once.
 
 ```python
 def city_to_country(city):
@@ -114,19 +125,20 @@ def transform_row(r):
     r.eur = r.hrk * get_exchange_rate('HRK', 'EUR', r.date)
     return r
 
-df = df.apply(transform_row, axis=1)
+df = df.apply(transform_row, axis=1) # applying the function to each row
 print(df.iloc[90:130, :11])
 ```
 
-now that we have filled out our data set
-
 ![processed](./img/processed_data.png)
 
-now it's time to start plotting!
+most of the data is filled, the data that isn't won't be used in
+plotting our graphs anyway so there is no need to fill out the rest.
+now it's time to start answering questions!
 
 ### what percentage of money is spent on groceries, activities, traveling...?
 
-shouldn't be too hard, let's group entries in our dataset by category and sum up the total amount of money spent for each of them;
+grouping the entries by category and assigning the sum of money spent to each
+of them is the way to go. this can be best presented in a pie chart.
 
 ```python
 category_sum = []
@@ -145,9 +157,17 @@ plt.show()
 
 ![categorypiechart](./img/category_pie_chart.png)
 
-### what is the preferred public transport?
+the chart isn't surprising at all.
+what maybe catches eye is the transport cost which seems unbelievably low.
+that is merely due to my habit of walking everywhere.
+even more so when everything is so close in Poznan.
 
-this is a very similar problem to the one we solved just a minute ago, we group by entries by description where the category value is 'transport'
+### what is the preferred public transport (including traveling)?
+
+this is a very similar problem to the one above.
+entries should be grouped by description where the category value is
+'transport' or 'travel'.
+an important note is that personal transportation (car/motorbike) is excluded.
 
 ```python
 preferred_transport = []
@@ -162,15 +182,25 @@ fig1, ax1 = plt.subplots()
 ax1.pie(sums, explode=explode, labels=labels, autopct='%1.1f%%',
         shadow=True, startangle=0)
 ax1.axis('equal')
-plt.title('preferred transport')
+plt.title('preferred public transport')
 plt.show()
 ```
 
 ![transportpiechart](./img/transport_pie_chart.png)
 
+this chart poses more questions than it answers.
+but...
+since this should be somewhat of a short read it will be benificial not to
+delve into the depths here because more interesting things are on the radar.
+
 ### how expensive is each city daily?
 
-we can have fun with this one. instead of just answering how much money we spent daily in each city, let's also show on what was the money spent.
+what could be done is, rinsing and repeating, pie chart spewing.
+but!
+this question can be answered in a flashier manner.
+namely, since the data contains what was the money spent on during each day,
+that information can be plotted on the graph as well.
+all the travel information must be excluded!
 
 ```python
 all_categories = tuple(set(df['category']) - set('travel'))
@@ -199,6 +229,20 @@ plt.show()
 ```
 
 ![stackedbarchart](./img/stacked_bar_chart.png)
+
+what does this chart tell us?
+firstly, pizza hut's 'Big cheesy B' is not worth 20 euros
+(the stockholm fastfood expense) even if you split the bill with someone.
+a banana in sweden is more expensive than lunch in poland.
+jokes aside, one can notice that even when accomodation is free,
+traveling is really expensive when you don't have a kitchen.
+
+> free accomodation was made possible by sleeping by friends, in buses/trains,
+couch surfing, etc.
+
+on a further note, instead of just getting rid of the 'travel' category, it would be
+beneficial to drop categories such as 'clothes', 'gifts' and other
+minorities although it's not much of a difference.
 
 ### how much money is spent weekly?
 
@@ -278,6 +322,7 @@ plt.show()
 
 ![simplelinearregression](./img/simple_linear_regression.png)
 
+put me in a spot of bother
 ok, so we've built a simple linear regressor, can we improve it though?
 
 let's try feeding the regressor with more data such as information about the country and meansofpayment
