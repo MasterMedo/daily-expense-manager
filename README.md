@@ -235,7 +235,7 @@ plt.show()
 
 what does this chart tell us?
 firstly, pizza hut's 'Big cheesy B' is not worth 20 euros
-(the stockholm fastfood expense) even if you split the bill with my significant
+(the stockholm fastfood expense) even if you split the bill with your significant
 other.
 secondly, a banana in sweden is more expensive than lunch in poland...
 jokes aside, one can notice that even when accomodation is free,
