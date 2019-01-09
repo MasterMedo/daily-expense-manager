@@ -7,7 +7,7 @@ due to the original code using api keys I'm not willing to share.
 each day people spend money on various things.
 each transaction holds a bunch of meta information.
 instead of going to waste that information can be used to learn about one's tendencies.
-what percentage of money is spent on food? on transpot? traveling?
+what percentage of money is spent on food? on transport? traveling?
 how expensive are the cities that were visited?
 how much money is spent daily? weekly? monthly?
 can we use the data to predict our future expenses based on our location?
@@ -26,7 +26,7 @@ the data set I keep consists of the following columns:
 10  lcy - local currency, amount of money spent in the local currency of current transaction,
 11  eur - euro, amount of money spent in euros,
 12  tags - something that will remind me of the record,
-13  recurrence - is the expense likely to be repeated
+13  recurrence - is the expense likely to be repeated (yes/no)
 ```
 
 ## questions to be answered:
@@ -42,12 +42,12 @@ the data set I keep consists of the following columns:
 1. preprocess
 	1. read data
 	2. fill empty data
-  	1. date = add year where needed
+		1. date = add year where needed
 		2. country = get_country_from_city
 		3. currency = get_currency_from_country
 		4. currencies
 			1. if hrk not set: hrk = lcy * get_rate(currency, 'HRK' date)
-      2. if eur not set: eur = hrk * get_rate('HRK', 'EUR', date)
+			2. if eur not set: eur = hrk * get_rate('HRK', 'EUR', date)
 2. plot graphs
 	1. category - money pie chart
 	2. public transport pie chart
@@ -85,8 +85,8 @@ all the missing data can be filled from what we already have.
 4. if hrk not set: hrk = lcy * get_exchange_rate(currency, 'HRK', date)
 5. if eur not set: eur = hrk * get_exchange_rate('HRK', 'EUR', date)
 
-fortuntely non of the relevant information is missing (cost) for any of the
-entries, but if there were some missing the mean of the column would replace
+fortunately non of the relevant information is missing (cost) for any of the
+entries, but if there were such entries the mean of the column would replace
 the empty record.
 
 the data will be processed in one swoop, the goal is to iterate over the set
@@ -142,7 +142,7 @@ now it's time to start answering questions!
 ### what percentage of money is spent on groceries, activities, traveling...?
 
 grouping the entries by category and assigning the sum of money spent to each
-of them is the way to go. this can be best presented in a pie chart.
+of them is the way to go. this can be best presented with a pie chart.
 
 ```python
 category_sum = []
@@ -161,16 +161,15 @@ plt.show()
 
 ![categorypiechart](./img/category_pie_chart.png)
 
-the chart isn't surprising at all.
-what maybe catches eye is the transport cost which seems unbelievably low.
-that is merely due to my habit of walking everywhere.
-even more so when everything is so close in Poznan.
+the chart isn't all that surprising.
+what maybe catches one's eye is the transport cost which seems unbelievably low.
+that is merely due to my habit of mostly walking.
+even more so when everything is close in Poznan.
 
 ### what is the preferred public transport (including traveling)?
 
 this is a very similar problem to the one above.
-entries should be grouped by description where the category value is
-'transport' or 'travel'.
+entries are to be grouped by description where the category value is 'transport' or 'travel'.
 an important note is that personal transportation (car/motorbike) is excluded.
 
 ```python
@@ -237,7 +236,7 @@ plt.show()
 what does this chart tell us?
 firstly, pizza hut's 'Big cheesy B' is not worth 20 euros
 (the stockholm fastfood expense) even if you split the bill with someone.
-a banana in sweden is more expensive than lunch in poland.
+secondly, a banana in sweden is more expensive than lunch in poland...
 jokes aside, one can notice that even when accomodation is free,
 traveling is really expensive when you don't have a kitchen.
 
@@ -251,16 +250,14 @@ minorities although it's not much of a difference.
 ### how much money is spent daily?
 
 instead of just summing the amount of money for each day,
-we can show the amount of money spent over time,
-where the differences between adjecent columns are gonna represent
-the amount of money spent that day.
-doing things this way we will already have data prepared for
-doing a little bit of computer science predicting our future expenses.
+it is benificial if we extract the information which city belongs to which day.
+doing things this way will already have the data prepared for
+doing a little bit of computer science predicting the future expenses later on.
 
 ```python
 daily_expenses = []
-all_dates = list(pd.date_range(min(df['date']), max(df['date']), freq='D'))
 cities = []
+all_dates = list(pd.date_range(min(df['date']), max(df['date']), freq='D'))
 for d in list(all_dates):
     value = sum(df[df['date'] == d.date()]['eur'])
     if value:
@@ -281,6 +278,10 @@ plt.show()
 
 ![dailybarchart](./img/daily_bar_chart.png)
 
+this looks like it's going to need some clipping.
+but let's not be pessimistic just yet.
+we'll revisit this if it amounts to a problem.
+
 ## what about question 5?
 
 > how much money will be spent in the upcoming days?
@@ -288,7 +289,8 @@ plt.show()
 usually, this would be approached differently;
 one would try to evalue which machine learning method would be best
 suitable for adapting to the plotted function.
-but in this case, we'll play empirists and do regression first.
+but in this case, we'll pretend to be british empirists, turn a blind eye and
+just do regression.
 
 ### linear regression pseudocode
 
@@ -372,7 +374,7 @@ for i in range(xopt.shape[1]):
 ```
 
 now all that's left is to split the data again into a test and training sets
-and get the <ypredopt>, which is the predict data of <ytest> after employing
+and get the <ypredopt>, which is the predicted data of <ytest> after employing
 backward elimination.
 
 ```python
