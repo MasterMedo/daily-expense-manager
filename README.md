@@ -329,7 +329,7 @@ x = x[:, 1:]
 
 next up is to split the data into a test and train sets.
 80% of the data will be used to train the model, and the rest used for the test set.
-<ytest> is the test data we'll compare the regression results to.
+`ytest` is the test data we'll compare the regression results to.
 
 ```python
 from sklearn.model_selection import train_test_split as tts
@@ -344,21 +344,21 @@ regressor = LinearRegression()
 regressor.fit(xtrain, ytrain)
 ```
 
-<ypred> is the list of predicted values using multiple linear regression with
+`ypred` is the list of predicted values using multiple linear regression with
 all the data available (dates, cities).
 
 ```python
 ypred = regressor.predict(xtest)
 ```
 
-what we could do now is compare the results to the <ytest> and call it a day.
+what we could do now is compare the results to the `ytest` and call it a day.
 but we're not gonna stop there, let's ask ourselves a question.
 how beneficial is the abundace of information we're feeding to the regressor?
 let's build a quick
 [backward elimination](https://en.wikipedia.org/wiki/Stepwise_regression#Main_approaches)
 algorithm and let it choose the columns it wants to leave inside.
 we'll set the [p-value](https://en.wikipedia.org/wiki/P-value)
-to the standard <0.05>, sit back, relax, and let the magic unfold.
+to the standard `0.05`, sit back, relax, and let the magic unfold.
 
 ```python
 import statsmodels.formula.api as sm
@@ -374,7 +374,7 @@ for i in range(xopt.shape[1]):
 ```
 
 now all that's left is to split the data again into a test and training sets
-and get the <ypredopt>, which is the predicted data of <ytest> after employing
+and get the `ypredopt`, which is the predicted data of `ytest` after employing
 backward elimination.
 
 ```python
@@ -396,9 +396,9 @@ plt.xlabel('days in the test set')
 plt.show()
 ```
 
-- green: <ytest>, real points
-- navy/blue: <ypred>, predicted points before backward elimination
-- red: <ypredopt>, predicted points after backward elimination
+- green: `ytest`, real points
+- navy/blue: `ypred`, predicted points before backward elimination
+- red: `ypredopt`, predicted points after backward elimination
 
 ![regression](./img/linear_regression.png)
 
