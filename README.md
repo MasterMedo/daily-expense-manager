@@ -1,5 +1,9 @@
 # analyzing daily expenses, real use-case
 
+> I don't see the benefit of this being a gist, let alone a jupyter notebook, if
+one is so eager to run the code themselves I provided one with minor changes
+due to the original code using api keys I'm not willing to share.
+
 each day people spend money on various things.
 each transaction holds a bunch of meta information.
 instead of going to waste that information can be used to learn about one's tendencies.
@@ -30,8 +34,8 @@ the data set I keep consists of the following columns:
 1. what percentage of money is spent on groceries, activities, traveling...?
 2. what is the preferred public transport?
 3. how expensive is each city daily?
-4. how much money is spent weekly?
-5. how much money will be spent in the upcoming weeks?
+4. how much money is spent daily?
+5. how much money will be spent in the upcoming days?
 
 ### questions 1-4 pseudocode
 
@@ -48,7 +52,7 @@ the data set I keep consists of the following columns:
 	1. category - money pie chart
 	2. public transport pie chart
   3. daily city expenses stacked bar chart
-  4. weekly expense bar chart
+  4. daily expense bar chart
 
 importing libraries
 
@@ -244,42 +248,56 @@ on a further note, instead of just getting rid of the 'travel' category, it woul
 beneficial to drop categories such as 'clothes', 'gifts' and other
 minorities although it's not much of a difference.
 
-### how much money is spent weekly?
+### how much money is spent daily?
 
-instead of just summing the amount of money for each week, we can show the amount of money spent over time, where the differences between adjecent columns are gonna represent the amount of money spent that week. doing things this way we will already have data prepared for doing a little bit of computer science predicting our future expenses.
+instead of just summing the amount of money for each day,
+we can show the amount of money spent over time,
+where the differences between adjecent columns are gonna represent
+the amount of money spent that day.
+doing things this way we will already have data prepared for
+doing a little bit of computer science predicting our future expenses.
 
 ```python
-weekly_expenses = []
-all_dates = pd.date_range(min(df['date']), max(df['date']), freq='7D')
-for d in all_dates:
-    value = sum(df[df['date'] < d.date()+timedelta(days=7)]['eur'])
-    weekly_expenses.append((d.date(), value))
-dates, sums = zip(*weekly_expenses)
+daily_expenses = []
+all_dates = list(pd.date_range(min(df['date']), max(df['date']), freq='D'))
+cities = []
+for d in list(all_dates):
+    value = sum(df[df['date'] == d.date()]['eur'])
+    if value:
+        cities.append(df[df['date'] == d.date()]['city'].values[-1])
+        daily_expenses.append((d.date(), value))
+    else:
+        all_dates.remove(d)
+dates, sums = zip(*daily_expenses)
+
 ind = np.arange(len(all_dates))
 plt.bar(ind, sums, color='red', width=0.35)
 plt.xticks(ind, list(range(len(all_dates))))
-plt.title('weekly amount of money spend')
-plt.xlabel('week number')
+plt.title('daily amount of money spend')
+plt.xlabel('day number')
 plt.ylabel('amount of money in eur')
 plt.show()
 ```
 
-![weeklybarchart](./img/weekly_bar_chart.png)
+![dailybarchart](./img/daily_bar_chart.png)
 
 ## what about question 5?
 
-> how much money will be spent in the upcoming weeks?
+> how much money will be spent in the upcoming days?
 
-usually, we would approach this differently, trying to evaluate which machine learning method would be best suitable for adapting to the plotted function, but in this case, let's just experiment and do regression since it's the 'simplest' one
+usually, this would be approached differently;
+one would try to evalue which machine learning method would be best
+suitable for adapting to the plotted function.
+but in this case, we'll play empirists and do regression first.
 
-### regression pseudocode
+### linear regression pseudocode
 
 1. preprocess
-	1. convert data into a weekly table
-	5. encode categorical data
-	6. avoid the dummy variable trap
-	7. split data into test and train sets
-	8. feature scale
+	1. convert data into a daily table, with dates and city information
+	2. encode categorical data
+	3. avoid the dummy variable trap
+	4. split data into test and train sets
+	5. feature scale
 2. building our regression model
 	1. fit the regressor to our train set
 	2. remove columns that are not beneficial
@@ -287,46 +305,123 @@ usually, we would approach this differently, trying to evaluate which machine le
 	3. predict values
 3. plot results
 
-### simple linear regression
+### multiple linear regression
 
-x is gonna be the week number, y is gonna be the amount of money spent in that week
+the city column has to be encoded into <n> columns each representing one city.
 
 ```python
-weekly_expenses = []
-all_dates = pd.date_range(min(df['date']), max(df['date']), freq='7D')
-for d in all_dates:
-    value = sum(df[df['date'] < d.date()+timedelta(days=7)]['eur'])
-    weekly_expenses.append((d.date(), value))
-dates, sums = zip(*weekly_expenses)
-
-x = np.arange(len(dates)).reshape(-1,1)
+x = np.array([*zip(range(len(dates)), cities)])
 y = sums
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.compose import ColumnTransformer, make_column_transformer
+preprocess = make_column_transformer((OneHotEncoder(), [-1])).fit_transform(x)
+x = np.array([*zip(preprocess, x[:, 0])])
+```
 
+now we have to avoid the
+[dummy variable](https://en.wikipedia.org/wiki/Dummy_variable_(statistics)) trap.
+
+```python
+x = x[:, 1:]
+```
+
+next up is to split the data into a test and train sets.
+80% of the data will be used to train the model, and the rest used for the test set.
+<ytest> is the test data we'll compare the regression results to.
+
+```python
 from sklearn.model_selection import train_test_split as tts
-xtrain, xtest, ytrain, ytest = tts(x, y, test_size = 1/3)
+xtrain, xtest, ytrain, ytest = tts(x, y, test_size = 0.2)
+```
 
+following the pseudocode the regressor should be created and fit to the train set.
+
+```python
 from sklearn.linear_model import LinearRegression
 regressor = LinearRegression()
 regressor.fit(xtrain, ytrain)
-ypred = regressor.predict(xtest)
+```
 
-ind = np.arange(len(all_dates))
-plt.scatter(x, y, color='navy')
-plt.plot(x, regressor.predict(x), color='red')
-plt.xticks(ind, list(range(len(all_dates))))
-plt.title('weekly amount of money spend')
-plt.xlabel('week number')
-plt.ylabel('amount of money in eur')
+<ypred> is the list of predicted values using multiple linear regression with
+all the data available (dates, cities).
+
+```python
+ypred = regressor.predict(xtest)
+```
+
+what we could do now is compare the results to the <ytest> and call it a day.
+but we're not gonna stop there, let's ask ourselves a question.
+how beneficial is the abundace of information we're feeding to the regressor?
+let's build a quick
+[backward elimination](https://en.wikipedia.org/wiki/Stepwise_regression#Main_approaches)
+algorithm and let it choose the columns it wants to leave inside.
+we'll set the [p-value](https://en.wikipedia.org/wiki/P-value)
+to the standard <0.05>, sit back, relax, and let the magic unfold.
+
+```python
+import statsmodels.formula.api as sm
+xopt = np.hstack([np.ones((x.shape[0], 1)), x])
+for i in range(xopt.shape[1]):
+    pvalues = sm.OLS(y, xopt.astype(np.float64)).fit().pvalues
+    mi = np.argmax(pvalues)
+    mp = pvalues[mi]
+    if mp > 0.05:
+        xopt = np.delete(xopt, [mi], 1)
+    else:
+        break
+```
+
+now all that's left is to split the data again into a test and training sets
+and get the <ypredopt>, which is the predict data of <ytest> after employing
+backward elimination.
+
+```python
+xtrain, xtest, ytrain, ytest = tts(xopt, y, test_size = 0.2, random_state = 0)
+regressor = LinearRegression()
+regressor.fit(xtrain, ytrain)
+
+ypredopt = regressor.predict(xtest)
+```
+
+all that's left is to plot everything and check out the result!
+
+```python
+plt.plot(ytest, color = 'green')
+plt.plot(ypred, color = 'navy')
+plt.plot(ypredopt, color = 'red')
+plt.ylabel('predicted value in eur')
+plt.xlabel('days in the test set')
 plt.show()
 ```
 
-![simplelinearregression](./img/simple_linear_regression.png)
+- green: <ytest>, real points
+- navy/blue: <ypred>, predicted points before backward elimination
+- red: <ypredopt>, predicted points after backward elimination
 
-put me in a spot of bother
-ok, so we've built a simple linear regressor, can we improve it though?
+![regression](./img/linear_regression.png)
 
-let's try feeding the regressor with more data such as information about the country and meansofpayment
+hm.
+initially this put me in a spot of bother.
+the backward elimination threw away all the data altogether.
+but if we take into consideration the size of the dataset that is logical.
 
-```python
-# multiple linear regression
-```
+## conclusion
+
+unfortunately graphs don't speak for themselves.
+the reader is the one to assume what they might mean and try to prove it.
+hopefully, this will always remain an ongoing project.
+the dataset won't be updated due to it being personal information.
+
+## expansion ideas
+
+1. more models
+	1. boosted tree decision
+	2. poisson
+2. result comparison
+	1. R^2
+	2. mean absolute error
+	3. root mean squared error
+	4. relative absolute error
+3. visualization ideas
+	1. heatmap over the map of europe
+
