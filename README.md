@@ -242,3 +242,46 @@ usually, we would approach this differently, trying to evaluate which machine le
 		1. backward elimination
 	3. predict values
 3. plot results
+
+### simple linear regression
+
+x is gonna be the week number, y is gonna be the amount of money spent in that week
+
+```python
+weekly_expenses = []
+all_dates = pd.date_range(min(df['date']), max(df['date']), freq='7D')
+for d in all_dates:
+    value = sum(df[df['date'] < d.date()+timedelta(days=7)]['eur'])
+    weekly_expenses.append((d.date(), value))
+dates, sums = zip(*weekly_expenses)
+
+x = np.arange(len(dates)).reshape(-1,1)
+y = sums
+
+from sklearn.model_selection import train_test_split as tts
+xtrain, xtest, ytrain, ytest = tts(x, y, test_size = 1/3)
+
+from sklearn.linear_model import LinearRegression
+regressor = LinearRegression()
+regressor.fit(xtrain, ytrain)
+ypred = regressor.predict(xtest)
+
+ind = np.arange(len(all_dates))
+plt.scatter(x, y, color='navy')
+plt.plot(x, regressor.predict(x), color='red')
+plt.xticks(ind, list(range(len(all_dates))))
+plt.title('weekly amount of money spend')
+plt.xlabel('week number')
+plt.ylabel('amount of money in eur')
+plt.show()
+```
+
+![simplelinearregression](./img/simple_linear_regression.png)
+
+ok, so we've built a simple linear regressor, can we improve it though?
+
+let's try feeding the regressor with more data such as information about the country and meansofpayment
+
+```python
+# multiple linear regression
+```
