@@ -1,12 +1,8 @@
 # analyzing daily expenses, real use-case
 
-### Revision 1.1. - the 1.0 version, made until the deadline is in the repo
-
 > I don't see the benefit of this being a gist, let alone a jupyter notebook, if
 one is so eager to run the code themselves I provided one with minor changes
 due to the original code using api keys I'm not willing to share.
-
-## motivation
 
 each day people spend money on various things.
 each transaction holds a bunch of meta information.
@@ -14,25 +10,9 @@ instead of going to waste that information can be used to learn about one's tend
 what percentage of money is spent on food? on transport? traveling?
 how expensive are the cities that were visited?
 how much money is spent daily? weekly? monthly?
-can we use the data to predict future expenses?
+can we use the data to predict our future expenses based on our location?
 
-## objective of the study:
-
-the objective is to answer a series of questions:
-
-1. what percentage of money is spent on groceries, activities, traveling...?
-2. what is the preferred public transport?
-3. how expensive is each city daily?
-4. how much money is spent daily?
-5. how much money will be spent in the upcoming days?
-
-## collecting the data
-
-due to the specific nature of objectives it is highly unlikely the needed data
-would have already been collected and published.
-that is why, starting from 19th of september, I started keeping
-track of my daily expenses in the following form:
-
+the data set I keep consists of the following columns:
 ```
 1   hrk - croatian kuna, amount of money spent in the currency of Croatia,
 2   vendor - company that I bought an item/service from,
@@ -48,6 +28,14 @@ track of my daily expenses in the following form:
 12  tags - something that will remind me of the record,
 13  recurrence - is the expense likely to be repeated (yes/no)
 ```
+
+## questions to be answered:
+
+1. what percentage of money is spent on groceries, activities, traveling...?
+2. what is the preferred public transport?
+3. how expensive is each city daily?
+4. how much money is spent daily?
+5. how much money will be spent in the upcoming days?
 
 ### questions 1-4 pseudocode
 
@@ -78,7 +66,6 @@ import matplotlib.pyplot as plt       # plotting processed data
 ```
 
 reading data from a .csv file
-
 ```python
 df = pd.read_csv('./expenses.csv')
 print(df.iloc[90:130, :11])
@@ -99,10 +86,10 @@ all the missing data can be filled from what we already have.
 5. if eur not set: eur = hrk * get_exchange_rate('HRK', 'EUR', date)
 
 fortunately non of the relevant information is missing (cost) for any of the
-entries, but if there were for such entries the mean of the column would replace
+entries, but if there were such entries the mean of the column would replace
 the empty record.
 
-the data will be processed in one swoop, the goal is to iterate over the data set
+the data will be processed in one swoop, the goal is to iterate over the set
 only once.
 
 ```python
@@ -211,7 +198,7 @@ delve into the depths here because more interesting things are on the radar.
 
 ### how expensive is each city daily?
 
-what *could* be done is, rinsing and repeating, pie chart spewing.
+what could be done is, rinsing and repeating, pie chart spewing.
 but!
 this question can be answered in a flashier manner.
 namely, since the data contains what was the money spent on during each day,
@@ -264,7 +251,7 @@ minorities although it's not much of a difference.
 ### how much money is spent daily?
 
 instead of just summing the amount of money for each day,
-it is benificial to extract the information which city belongs to which day.
+it is benificial if we extract the information which city belongs to which day.
 doing things this way will already have the data prepared for
 doing a little bit of computer science predicting the future expenses later on.
 
@@ -292,9 +279,7 @@ plt.show()
 
 ![dailybarchart](./img/daily_bar_chart.png)
 
-the severe peaks do not belong to traveling, it's weekly shopping and rent that
-causes such irregularities.
-it looks like the data is going to need some clipping.
+this looks like it's going to need some clipping.
 but let's not be pessimistic just yet.
 we'll revisit this if it amounts to a problem.
 
@@ -316,8 +301,8 @@ just do regression.
 	3. avoid the dummy variable trap
 	4. split data into test and train sets
 	5. feature scale
-2. build our regression model
-	1. fit the regressor to the train set
+2. building our regression model
+	1. fit the regressor to our train set
 	2. remove columns that are not beneficial
 		1. backward elimination
 	3. predict values
@@ -418,33 +403,17 @@ plt.show()
 
 ![regression](./img/linear_regression.png)
 
-initially the results put me in a spot of bother.
+hm.
+initially this put me in a spot of bother.
 the backward elimination threw away all the data altogether.
 but if we take into consideration the size of the dataset that is logical.
-the reason that the predicted points before backward elimination are always
-smaller in this sample is that `ytest` contains entries only for poznan, the
-column on the far left is so high due to weekly shopping.
 
 ## conclusion
 
 unfortunately graphs don't speak for themselves.
-we can only assume what they might mean and try to prove it.
-one thing is certain, city information shouldn't be discarded by the backward
-elimination process, but it also doesn't make much sense to change the p-value.
-the culprit is the sample size, not enough information.
-other than that the results are satisfying.
-the test results of the multiple linear regression predict the costs fairly
-well, exception being the peaks (weekly shopping).
-
-
-## improvment ideas
-
-the results would be more accurate if a bigger sample was provided.
-on the other hand it would be benificial to split travel expenses from
-daily basis costs.
-this would be further improved by
-[clipping](https://en.wikipedia.org/wiki/Clipping_%28signal_processing%29)
-or distributing the peaks across weekly periods since shopping is done weekly.
+the reader is the one to assume what they might mean and try to prove it.
+hopefully, this will always remain an ongoing project.
+the dataset won't be updated due to it being personal information.
 
 ## expansion ideas
 
@@ -459,7 +428,3 @@ or distributing the peaks across weekly periods since shopping is done weekly.
 3. visualization ideas
 	1. heatmap over the map of europe
 
-## afterword
-
-hopefully, this will always remain an ongoing project.
-the dataset won't be updated due to it being personal information.
