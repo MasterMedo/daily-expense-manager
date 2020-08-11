@@ -6,31 +6,30 @@
 one is so eager to run the code themselves I provided one with minor changes
 due to the original code using api keys I'm not willing to share.
 
-## motivation
+## Motivation
 
-each day people spend money on various things.
-each transaction holds a bunch of meta information.
-instead of going to waste that information can be used to learn about one's tendencies.
-what percentage of money is spent on food? on transport? traveling?
-how expensive are the cities that were visited?
-how much money is spent daily? weekly? monthly?
-can we use the data to predict future expenses?
+Each day people spend money on various things.
+Each transaction holds a bunch of meta information.
+Instead of going to waste, that information can be used to learn about one's tendencies.
+What percentage of money is spent on food? On transport? Traveling?
+How expensive are the cities that were visited?
+How much money is spent daily? Weekly? Monthly?
+Can we use the data to predict future expenses?
 
-## objective of the study:
+## Objective of the study:
 
-the objective is to answer a series of questions:
+The objective is to answer a series of questions:
 
-1. what percentage of money is spent on groceries, activities, traveling...?
-2. what is the preferred public transport?
-3. how expensive is each city daily?
-4. how much money is spent daily?
-5. how much money will be spent in the upcoming days?
+1. What percentage of money is spent on groceries, activities, traveling...?
+2. What is the preferred public transport?
+3. How expensive is each city daily?
+4. How much money is spent daily?
+5. How much money will be spent in the upcoming days?
 
-## collecting the data
+## Collecting the data
 
-due to the specific nature of objectives it is highly unlikely the needed data
-would have already been collected and published.
-that is why, starting from 19th of september, I started keeping
+Due to the specific nature of objectives it is highly unlikely the needed data would have already been collected and published.
+That is why, starting from 19th of September 2018, I started keeping
 track of my daily expenses in the following form:
 
 ```
@@ -49,20 +48,20 @@ track of my daily expenses in the following form:
 13  recurrence - is the expense likely to be repeated (yes/no)
 ```
 
-### questions 1-4 pseudocode
+### Questions 1-4 pseudocode
 
 1. preprocess
-	1. read data
-	2. fill empty data
-		1. date = add year where needed
-		2. country = get_country_from_city
-		3. currency = get_currency_from_country
-		4. currencies
-			1. if hrk not set: hrk = lcy * get_rate(currency, 'HRK' date)
-			2. if eur not set: eur = hrk * get_rate('HRK', 'EUR', date)
+  1. read data
+  2. fill empty data
+    1. date = add year where needed
+    2. country = get_country_from_city
+    3. currency = get_currency_from_country
+    4. currencies
+      1. if hrk not set: hrk = lcy * get_rate(currency, 'HRK' date)
+      2. if eur not set: eur = hrk * get_rate('HRK', 'EUR', date)
 2. plot graphs
-	1. category - money pie chart
-	2. public transport pie chart
+  1. category - money pie chart
+  2. public transport pie chart
   3. daily city expenses stacked bar chart
   4. daily expense bar chart
 
@@ -86,24 +85,23 @@ print(df.iloc[90:130, :11])
 
 ![raw](./img/raw_data.png)
 
-upon quick inspection one can denote the marginal scarcity of data.
-whats more, in the last couple of columns the dates aren't even fully completed.
-throwing a glance at the pseudocode provided above one can fleetly conclude
+Upon quick inspection one can denote the marginal scarcity of data in the last few columns.
+What is more, in the last couple of rows the dates aren't even fully completed.
+Throwing a glance at the pseudocode provided above one can fleetly conclude
 that is not a problem.
-all the missing data can be filled from what we already have.
+All the missing data can be filled from what we already have.
 
-1. date = add year where needed
-2. country = get_country_from_city
-3. currency = get_currency_from_country
+1. date -> add year where needed
+2. country -> get_country_from_city
+3. currency -> get_currency_from_country
 4. if hrk not set: hrk = lcy * get_exchange_rate(currency, 'HRK', date)
 5. if eur not set: eur = hrk * get_exchange_rate('HRK', 'EUR', date)
 
-fortunately non of the relevant information is missing (cost) for any of the
+Fortunately non of the relevant information is missing (cost) for any of the
 entries, but if there were for such entries the mean of the column would replace
 the empty record.
 
-the data will be processed in one swoop, the goal is to iterate over the data set
-only once.
+The data will be processed in one swoop, the goal is to iterate over the data set only once.
 
 ```python
 def city_to_country(city):
@@ -148,14 +146,14 @@ print(df.iloc[90:130, :11])
 
 ![processed](./img/processed_data.png)
 
-most of the data is filled, the data that isn't won't be used in
-plotting our graphs anyway so there is no need to fill out the rest.
-now it's time to start answering questions!
+Most of the data is filled, the data that isn't won't be used in plotting our graphs anyway so there is no need to fill out the rest.
+Now it's time to start answering questions!
 
-### what percentage of money is spent on groceries, activities, traveling...?
+### What percentage of money is spent on groceries, activities, traveling...?
 
-grouping the entries by category and assigning the sum of money spent to each
-of them is the way to go. this can be best presented with a pie chart.
+Grouping the entries by category and assigning the sum of money spent to each
+of them is the way to go.
+This can be best presented with a pie chart.
 
 ```python
 category_sum = []
@@ -174,16 +172,16 @@ plt.show()
 
 ![categorypiechart](./img/category_pie_chart.png)
 
-the chart isn't all that surprising.
-what maybe catches one's eye is the transport cost which seems unbelievably low.
-that is merely due to my habit of mostly walking.
-even more so when everything is close in Poznan.
+The chart isn't all that surprising.
+What maybe catches one's eye is the transport cost which seems unbelievably low.
+That is merely due to my habit of mostly walking.
+Even more so when everything is close, like it is in Poznan.
 
-### what is the preferred public transport (including traveling)?
+### What is the preferred public transport (including traveling)?
 
-this is a very similar problem to the one above.
-entries are to be grouped by description where the category value is 'transport' or 'travel'.
-an important note is that personal transportation (car/motorbike) is excluded.
+This is a very similar problem to the one above.
+Entries are to be grouped by description where the category value is 'transport' or 'travel'.
+An important note is that personal transportation (car/motorbike) is excluded.
 
 ```python
 preferred_transport = []
@@ -204,19 +202,16 @@ plt.show()
 
 ![transportpiechart](./img/transport_pie_chart.png)
 
-this chart poses more questions than it answers.
-but...
-since this should be somewhat of a short read it will be benificial not to
-delve into the depths here because more interesting things are on the radar.
+This chart poses more questions than it answers, but, since this should be somewhat of a short read it is benificial not to delve into the depths here because more interesting things are on the radar.
 
-### how expensive is each city daily?
+### How expensive is each city daily?
 
-what *could* be done is, rinsing and repeating, pie chart spewing.
-but!
-this question can be answered in a flashier manner.
-namely, since the data contains what was the money spent on during each day,
+What *could* be done is, rinsing and repeating, pie chart spewing.
+But!
+This question can be answered in a flashier manner.
+Namely, since the data contains what was the money spent on during each day,
 that information can be plotted on the graph as well.
-all the travel information must be excluded!
+All the travel information must be excluded!
 
 ```python
 all_categories = tuple(set(df['category']) - set('travel'))
@@ -246,27 +241,20 @@ plt.show()
 
 ![stackedbarchart](./img/stacked_bar_chart.png)
 
-what does this chart tell us?
-firstly, pizza hut's 'Big cheesy B' is not worth 20 euros
-(the stockholm fastfood expense) even if you split the bill with your significant
+What does this chart tell us?
+Firstly, pizza hut's *Big cheesy B* is not worth 20 euros (the Stockholm fastfood expense), even if you split the bill with your significant
 other.
-secondly, a banana in sweden is more expensive than lunch in poland...
-jokes aside, one can notice that even when accomodation is free,
-traveling is really expensive when you don't have a kitchen.
+Secondly, a banana in Sweden is more expensive than lunch in Poland...
+Jokes aside, one can notice that even when accomodation is free, traveling is really expensive when you don't have a kitchen.
 
-> free accomodation was made possible by sleeping by friends, in buses/trains,
-couch surfing, etc.
+> free accomodation was made possible through couch surfing, sleeping by friends, in buses/trains, etc.
 
-on a further note, instead of just getting rid of the 'travel' category, it would be
-beneficial to drop categories such as 'clothes', 'gifts' and other
-minorities although it's not much of a difference.
+On a further note, instead of just getting rid of the 'travel' category, it would have been advantageous to drop categories such as 'clothes', 'gifts' and other minorities although the difference is barely noticeable.
 
-### how much money is spent daily?
+### How much money is spent daily?
 
-instead of just summing the amount of money for each day,
-it is benificial to extract the information which city belongs to which day.
-doing things this way will already have the data prepared for
-doing a little bit of computer science predicting the future expenses later on.
+Instead of just summing the amount of money for each day, let's extract the information like which city belongs to which day.
+Doing things this way will already have the data prepared for doing a little bit of computer science predicting the future expenses later on.
 
 ```python
 daily_expenses = []
@@ -292,40 +280,37 @@ plt.show()
 
 ![dailybarchart](./img/daily_bar_chart.png)
 
-the severe peaks do not belong to traveling, it's weekly shopping and rent that
+The severe peaks do not belong to traveling, it's weekly shopping and rent that
 causes such irregularities.
-it looks like the data is going to need some clipping.
-but let's not be pessimistic just yet.
-we'll revisit this if it amounts to a problem.
+It looks like the data is going to need some clipping, but let's not be pessimistic just yet.
+We'll revisit this if it amounts to a problem.
 
-## what about question 5?
+## What about question 5?
 
 > how much money will be spent in the upcoming days?
 
-usually, this would be approached differently;
-one would try to evalue which machine learning method would be best
-suitable for adapting to the plotted function.
-but in this case, we'll pretend to be british empirists, turn a blind eye and
-just do regression.
+Usually, this would be approached differently;
+One would try to evalue which machine learning method would be best suitable for adapting to the plotted function.
+But in this case, we'll pretend to be british empiricists, turn a blind eye and just do the simplest method.
 
-### linear regression pseudocode
+### Linear regression pseudocode
 
 1. preprocess
-	1. convert data into a daily table, with dates and city information
-	2. encode categorical data
-	3. avoid the dummy variable trap
-	4. split data into test and train sets
-	5. feature scale
+  1. convert data into a daily table, with dates and city information
+  2. encode categorical data
+  3. avoid the dummy variable trap
+  4. split data into test and train sets
+  5. feature scale
 2. build our regression model
-	1. fit the regressor to the train set
-	2. remove columns that are not beneficial
-		1. backward elimination
-	3. predict values
+  1. fit the regressor to the train set
+  2. remove columns that are not beneficial
+    1. backward elimination
+  3. predict values
 3. plot results
 
-### multiple linear regression
+### Multiple linear regression
 
-the city column has to be encoded into <n> columns each representing one city.
+The city column has to be encoded into <n> columns each representing one city.
 
 ```python
 x = np.array([*zip(range(len(dates)), cities)])
@@ -336,14 +321,14 @@ preprocess = make_column_transformer((OneHotEncoder(), [-1])).fit_transform(x)
 x = np.array([*zip(preprocess, x[:, 0])])
 ```
 
-now we have to avoid the
+Now we have to avoid the
 [dummy variable](https://en.wikipedia.org/wiki/Dummy_variable_(statistics)) trap.
 
 ```python
 x = x[:, 1:]
 ```
 
-next up is to split the data into a test and train sets.
+Next up is to split the data into *test* and *train* sets.
 80% of the data will be used to train the model, and the rest used for the test set.
 `ytest` is the test data we'll compare the regression results to.
 
@@ -352,7 +337,7 @@ from sklearn.model_selection import train_test_split as tts
 xtrain, xtest, ytrain, ytest = tts(x, y, test_size = 0.2)
 ```
 
-following the pseudocode the regressor should be created and fit to the train set.
+Following the pseudocode the regressor should be created and fit to the training set.
 
 ```python
 from sklearn.linear_model import LinearRegression
@@ -367,13 +352,13 @@ all the data available (dates, cities).
 ypred = regressor.predict(xtest)
 ```
 
-what we could do now is compare the results to the `ytest` and call it a day.
-but we're not gonna stop there, let's ask ourselves a question.
-how beneficial is the abundace of information we're feeding to the regressor?
-let's build a quick
+What we could do now is compare the results to the `ytest` and call it a day.
+But we're not gonna stop there, let's ask ourselves a question.
+How beneficial is the abundace of information we're feeding to the regressor?
+Let's build a quick
 [backward elimination](https://en.wikipedia.org/wiki/Stepwise_regression#Main_approaches)
 algorithm and let it choose the columns it wants to leave inside.
-we'll set the [p-value](https://en.wikipedia.org/wiki/P-value)
+We'll set the [p-value](https://en.wikipedia.org/wiki/P-value)
 to the standard `0.05`, sit back, relax, and let the magic unfold.
 
 ```python
@@ -389,7 +374,7 @@ for i in range(xopt.shape[1]):
         break
 ```
 
-now all that's left is to split the data again into a test and training sets
+Now all that's left is to split the data again into test and training sets
 and get the `ypredopt`, which is the predicted data of `ytest` after employing
 backward elimination.
 
@@ -401,7 +386,7 @@ regressor.fit(xtrain, ytrain)
 ypredopt = regressor.predict(xtest)
 ```
 
-all that's left is to plot everything and check out the result!
+All that's left is to plot everything and check out the result!
 
 ```python
 plt.plot(ytest, color = 'green')
@@ -418,48 +403,47 @@ plt.show()
 
 ![regression](./img/linear_regression.png)
 
-initially the results put me in a spot of bother.
-the backward elimination threw away all the data altogether.
-but if we take into consideration the size of the dataset that is logical.
-the reason that the predicted points before backward elimination are always
-smaller in this sample is that `ytest` contains entries only for poznan, the
+Initially the results put me in a spot of bother.
+The backward elimination threw away all the data altogether.
+But if we take into consideration the size of the dataset that is logical.
+The reason that the predicted points before backward elimination are always
+smaller in this sample is that `ytest` contains entries only for Poznan, the
 column on the far left is so high due to weekly shopping.
 
-## conclusion
+## Conclusion
 
-unfortunately graphs don't speak for themselves.
-we can only assume what they might mean and try to prove it.
-one thing is certain, city information shouldn't be discarded by the backward
+Unfortunately graphs don't speak for themselves.
+We can only assume what they might mean and try to prove it.
+One thing is certain, city information shouldn't be discarded by the backward
 elimination process, but it also doesn't make much sense to change the p-value.
-the culprit is the sample size, not enough information.
-other than that the results are satisfying.
-the test results of the multiple linear regression predict the costs fairly
-well, exception being the peaks (weekly shopping).
+The culprit is the sample size, not enough information.
+Other than that the results are satisfying.
+The test results of the multiple linear regression predict the costs fairly well, exception being the peaks (weekly shopping).
 
 
-## improvment ideas
+## Improvment ideas
 
-the results would be more accurate if a bigger sample was provided.
-on the other hand it would be benificial to split travel expenses from
-daily basis costs.
-this would be further improved by
-[clipping](https://en.wikipedia.org/wiki/Clipping_%28signal_processing%29)
-or distributing the peaks across weekly periods since shopping is done weekly.
+The results would be more accurate if a bigger sample was provided.
+On the other hand it would be favourable to split travel expenses from daily basis costs.
+This could be further improved by [clipping](https://en.wikipedia.org/wiki/Clipping_%28signal_processing%29) or distributing the peaks across weekly periods since shopping is done weekly.
 
-## expansion ideas
+## Expansion ideas
 
 1. more models
-	1. boosted tree decision
-	2. poisson
+  1. boosted tree decision
+  2. poisson
 2. result comparison
-	1. R^2
-	2. mean absolute error
-	3. root mean squared error
-	4. relative absolute error
+  1. R^2
+  2. mean absolute error
+  3. root mean squared error
+  4. relative absolute error
 3. visualization ideas
-	1. heatmap over the map of europe
+  1. heatmap over the map of europe
 
-## afterword
+## Afterword
 
-hopefully, this will always remain an ongoing project.
-the dataset won't be updated due to it being personal information.
+Hopefully, this will always remain an ongoing project.
+The dataset won't be updated due to it being personal information.
+I hope it is/was of help to someone.
+
+Cheers!
