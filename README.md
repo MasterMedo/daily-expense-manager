@@ -28,7 +28,7 @@ The objective is to answer a series of questions:
 
 ## Collecting the data
 
-Due to the specific nature of objectives it is highly unlikely the needed data would have already been collected and published.
+Due to the specific nature of the objectives it is highly unlikely the needed data would have already been collected and published.
 That is why, starting from 19th of September 2018, I started keeping
 track of my daily expenses in the following form:
 
